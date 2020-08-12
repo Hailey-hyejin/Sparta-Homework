@@ -43,27 +43,6 @@
             showStar();
         });
 
-        function addStar() {
-            let url = $('#url').val()
-            if (url == "") {
-                alert("url을 입력해주세요.")
-                return
-            }
-            $.ajax({
-                type: "POST",
-                url: "/add",
-                data: {
-                    url_give: url,
-                },
-                success: function (response) {
-                    if (response["result"] == "success") {
-                        alert(response["msg"]);
-                        window.location.reload();
-                    }
-                }
-            })
-        }
-
         function showStar() {
             $.ajax({
                 type: 'GET',
@@ -143,6 +122,32 @@
             });
         }
 
+        function addStar() {
+            let star = $('#star_name').val()
+            if (star == "") {
+                alert("이름을 입력해주세요.")
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/api/add",
+                data: {
+                    'star_give': star,
+                },
+                success: function (response) {
+                    if (response["result"] == "success") {
+                        alert("저장완료");
+                        window.location.reload();
+                    } else if (response["result"] == "fail"){
+                        alert("중복된 데이터입니다.");
+                    } else {
+                        alert("서버오류!")
+                    }
+                }
+            }
+        )}
+
+
     </script>
 </head>
 <body>
@@ -155,11 +160,12 @@
             <h2 class="subtitle">
                 순위를 매겨봅시다
             </h2>
-            <div class="input-group mb-3" id="url">
-                <input type="text" class="form-control" placeholder="무비스타 URL"
-                       aria-label="Recipient's username" aria-describedby="button-addon2">
+            <div class="input-group mb-3">
+                <input id="star_name" type="text" class="form-control" placeholder="무비스타 이름"
+                       aria-label="무비스타" aria-describedby="button-addon2">
                 <div class="input-group-append">
-                    <button onclick="addStar" class="btn btn-outline-secondary" type="button" id="button-addon2">저장</button>
+                    <button onclick="addStar()" class="btn btn-outline-secondary" type="button" id="button-addon2">저장
+                    </button>
                 </div>
             </div>
 

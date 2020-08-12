@@ -1,3 +1,5 @@
+import requests
+from bs4 import BeautifulSoup
 from pymongo import MongoClient
 
 from flask import Flask, render_template, jsonify, request
@@ -16,9 +18,6 @@ def home():
 
 # API 역할을 하는 부분
 @app.route('/api/list', methods=['GET'])
-# def add_star():
-
-
 def show_stars():
     # 1. db에서 mystar 목록 전체를 검색합니다. ID는 제외하고 like 가 많은 순으로 정렬합니다.
     # 참고) find({},{'_id':False}), sort()를 활용하면 굿!
@@ -54,6 +53,36 @@ def delete_star():
     db.mystar.delete_one({'name': name_receive})
     # 3. 성공하면 success 메시지를 반환합니다.
     return jsonify({'result': 'success', 'msg': 'delete 연결되었습니다!'})
+
+
+@app.route('/api/add', methods=['POST'])
+def get_info():
+    star_receive = request.form['star_give']
+    search_url = "https://search.naver.com/search.naver?sm=top_hty&fbm=0&ie=utf8&query=" + star_receive
+
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)AppleWebKit/537.36 (KHTML, like Gecko) Chrome/73.0.3683.86 Safari/537.36'}
+    data = requests.get(search_url, headers=headers)
+    soup = BeautifulSoup(data.text, 'html.parser')
+
+    name = soup.select_one('#people_info_z > div.cont_noline > div > dl > dd.name > a > strong').text
+    img_url = soup.select_one('#people_info_z > div.cont_noline > div > div > a:nth-child(1) > img')['src']
+    recent_work = soup.select_one('#tx_ca_people_movie_content > ul > li:nth-child(1) > dl > dd:nth-child(1) > a').text
+
+    doc = {
+        'name': name,
+        'img_url': img_url,
+        'recent': recent_work,
+        'url': search_url,
+        'like': 0
+    }
+
+    count = db.mystar.count({'name': star_receive})
+    if count == 0:
+        db.mystar.insert_one(doc)
+        return jsonify({'result': 'success', 'msg': 'add 연결되었습니다!'})
+    elif count > 0:
+        return jsonify({'result': 'fail', 'msg': '중복 데이터'})
 
 
 if __name__ == '__main__':

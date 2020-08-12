@@ -1,6 +1,7 @@
 # 라이브러리 추가
 import requests
 from bs4 import BeautifulSoup
+from flask import Flask, render_template, jsonify, request
 
 from pymongo import MongoClient
 
@@ -65,4 +66,5 @@ def insert_all():
 
 ### 실행하기
 insert_all()
+
 
